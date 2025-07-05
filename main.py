@@ -33,13 +33,7 @@ limiter.init_app(app)
 # Wimbledon men's singles finals data
 WIMBLEDON_DATA ={
 
-    2024: {
-    "champion": "Carlos Alcaraz",
-    "runner_up": "Novak Djokovic",
-    "score": "6-2, 6-2, 7-6(7-4)",
-    "sets": 3,
-    "tiebreak": True
-    },
+    
 
 
     2023: {
