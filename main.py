@@ -4,6 +4,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from functools import wraps
 import os
+import secrets
 from datetime import datetime
 import logging
 
@@ -15,9 +16,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-
-# Security configuration
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'thisisasecretkey')
+ 
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
 app.config['JSON_SORT_KEYS'] = False
 
 # CORS configuration
@@ -31,7 +31,17 @@ limiter = Limiter(
 limiter.init_app(app)
 
 # Wimbledon men's singles finals data
-WIMBLEDON_DATA = {
+WIMBLEDON_DATA ={
+
+    2024: {
+    "champion": "Carlos Alcaraz",
+    "runner_up": "Novak Djokovic",
+    "score": "6-2, 6-2, 7-6(7-4)",
+    "sets": 3,
+    "tiebreak": True
+    },
+
+
     2023: {
         "champion": "Novak Djokovic",
         "runner_up": "Carlos Alcaraz",
