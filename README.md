@@ -5,13 +5,36 @@ A lightweight Flask-based REST API to fetch historical data on Wimbledon Men's S
 ---
 
 ## 📦 Features
+Security & Performance:
 
-* Retrieve detailed information about finals for a specific year.
-* List all available years.
-* Rate-limited to prevent abuse.
-* Well-documented API endpoints.
-* Includes health check and metadata in responses.
-* Configurable security headers and CORS.
+CORS support with configurable origins
+Security headers (XSS protection, content type options, etc.)
+Rate limiting (50 requests/hour, 200/day globally, 30/minute for main endpoint)
+Input validation and sanitization
+Secret key configuration
+
+Error Handling:
+
+Custom exception classes
+Comprehensive validation with decorator pattern
+Structured error responses with error codes
+Global error handlers for 404, 429, 500 errors
+Detailed logging
+
+API Design:
+
+RESTful endpoints with clear naming
+Consistent JSON response format
+Proper HTTP status codes
+Request/response validation
+API documentation endpoint
+
+Production Configuration:
+
+Environment-based configuration
+Configurable port and debug mode
+Proper logging setup
+Security headers middleware
 
 ---
 
