@@ -182,16 +182,6 @@ The API includes Redis-based caching for improved performance:
 * `GET /api/cache/stats` - View cache statistics
 * `POST /api/cache/clear` - Clear all cached data
 
-### Environment Variables
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `REDIS_URL` | Full Redis connection string | `redis://username:password@host:port` |
-| `REDIS_HOST` | Redis host | `localhost` |
-| `REDIS_PORT` | Redis port | `6379` |
-| `REDIS_PASSWORD` | Redis password | `your-password` |
-
----
-
 ## 🔐 Security & Headers
 
 * CORS configured for production domains
