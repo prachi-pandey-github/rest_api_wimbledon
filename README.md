@@ -44,34 +44,9 @@ source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 ```
 
-4. Set up environment variables:
+## 🔌 API Endpoint
+https://rest-api-wimbledon-1.onrender.com
 
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-### Production Deployment
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed Render deployment instructions.
-
----
-
-## ⚙️ Usage
-
-### Local Development
-
-Start the Flask server:
-
-```bash
-python main.py
-```
-
-The server will be available at `http://localhost:5000`
-
----
-
-## 🔌 API Endpoints
 
 ### 🔍 Health Check
 
