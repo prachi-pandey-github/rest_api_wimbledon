@@ -10,10 +10,6 @@ import logging
 import json
 import redis
 from urllib.parse import urlparse
-from dotenv import load_dotenv
-
-# Load environment variables from .env file (for local development)
-load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -68,11 +64,7 @@ except Exception as e:
     REDIS_AVAILABLE = False
 
 # CORS configuration
-cors_origins = ['*'] if os.environ.get('FLASK_ENV') == 'development' else [
-    'https://your-frontend-domain.com',  # Replace with your actual frontend domain
-    'https://wimbledon-api.onrender.com'  # Replace with your actual Render domain
-]
-CORS(app, origins=cors_origins)
+CORS(app, origins=['*'])  # In production, specify allowed origins
 
 # Rate limiting with Redis backend
 if REDIS_AVAILABLE:
@@ -248,9 +240,7 @@ def not_found(error):
             'GET /api/docs',
             'GET /wimbledon?year=YYYY',
             'GET /api/wimbledon?year=YYYY',
-            'GET /api/wimbledon/years',
-            'GET /api/cache/stats',
-            'POST /api/cache/clear'
+            'GET /api/wimbledon/years'
         ]
     }), 404
 
@@ -348,20 +338,6 @@ def api_documentation():
                 'description': 'Get list of available years',
                 'parameters': [],
                 'example': f"{request.url_root.rstrip('/')}/api/wimbledon/years"
-            },
-            {
-                'method': 'GET',
-                'path': '/api/cache/stats',
-                'description': 'Get cache statistics and Redis information',
-                'parameters': [],
-                'example': f"{request.url_root.rstrip('/')}/api/cache/stats"
-            },
-            {
-                'method': 'POST',
-                'path': '/api/cache/clear',
-                'description': 'Clear all cached data (admin endpoint)',
-                'parameters': [],
-                'example': f"{request.url_root.rstrip('/')}/api/cache/clear"
             }
         ],
         'response_format': {
@@ -590,11 +566,8 @@ if __name__ == '__main__':
     debug = os.environ.get('FLASK_ENV') == 'development'
     
     print(f"Starting Wimbledon API server on port {port}")
-    print(f"Redis status: {'Available' if REDIS_AVAILABLE else 'Unavailable (falling back to in-memory)'}")
-    print(f"Caching: {'Enabled' if REDIS_AVAILABLE else 'Disabled'}")
     print(f"Health check: http://localhost:{port}/health")
     print(f"API documentation: http://localhost:{port}/api/docs")
     print(f"Example usage: http://localhost:{port}/api/wimbledon?year=2021")
-    print(f"Cache stats: http://localhost:{port}/api/cache/stats")
     
     app.run(host='0.0.0.0', port=port, debug=debug)

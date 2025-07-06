@@ -68,11 +68,7 @@ except Exception as e:
     REDIS_AVAILABLE = False
 
 # CORS configuration
-cors_origins = ['*'] if os.environ.get('FLASK_ENV') == 'development' else [
-    'https://your-frontend-domain.com',  # Replace with your actual frontend domain
-    'https://wimbledon-api.onrender.com'  # Replace with your actual Render domain
-]
-CORS(app, origins=cors_origins)
+CORS(app, origins=['*'])  # In production, specify allowed origins
 
 # Rate limiting with Redis backend
 if REDIS_AVAILABLE:

@@ -10,10 +10,6 @@ import logging
 import json
 import redis
 from urllib.parse import urlparse
-from dotenv import load_dotenv
-
-# Load environment variables from .env file (for local development)
-load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -68,11 +64,7 @@ except Exception as e:
     REDIS_AVAILABLE = False
 
 # CORS configuration
-cors_origins = ['*'] if os.environ.get('FLASK_ENV') == 'development' else [
-    'https://your-frontend-domain.com',  # Replace with your actual frontend domain
-    'https://wimbledon-api.onrender.com'  # Replace with your actual Render domain
-]
-CORS(app, origins=cors_origins)
+CORS(app, origins=['*'])  # In production, specify allowed origins
 
 # Rate limiting with Redis backend
 if REDIS_AVAILABLE:
@@ -92,98 +84,6 @@ limiter.init_app(app)
 # Load Wimbledon data from JSON file
 with open('wimbledon_data.json', 'r', encoding='utf-8') as f:
     WIMBLEDON_DATA = {int(k): v for k, v in json.load(f).items()}
-
-# Cache configuration
-CACHE_TTL = {
-    'wimbledon_data': 3600,  # 1 hour for individual year data
-    'available_years': 7200,  # 2 hours for years list
-    'health_check': 60       # 1 minute for health check
-}
-
-# Redis helper functions
-def get_cache_key(prefix, *args):
-    """Generate cache key with prefix and arguments"""
-    return f"{prefix}:{'_'.join(map(str, args))}"
-
-def get_from_cache(key):
-    """Get data from Redis cache with fallback"""
-    if not REDIS_AVAILABLE:
-        return None
-    
-    try:
-        cached_data = redis_client.get(key)
-        if cached_data:
-            return json.loads(cached_data)
-    except Exception as e:
-        logger.warning(f"Cache read error for key {key}: {e}")
-    
-    return None
-
-def set_cache(key, data, ttl=3600):
-    """Set data in Redis cache with fallback"""
-    if not REDIS_AVAILABLE:
-        return False
-    
-    try:
-        redis_client.setex(key, ttl, json.dumps(data))
-        return True
-    except Exception as e:
-        logger.warning(f"Cache write error for key {key}: {e}")
-        return False
-
-def invalidate_cache_pattern(pattern):
-    """Invalidate cache keys matching pattern"""
-    if not REDIS_AVAILABLE:
-        return
-    
-    try:
-        keys = redis_client.keys(pattern)
-        if keys:
-            redis_client.delete(*keys)
-            logger.info(f"Invalidated {len(keys)} cache keys matching pattern: {pattern}")
-    except Exception as e:
-        logger.warning(f"Cache invalidation error for pattern {pattern}: {e}")
-
-# Cache decorator
-def cache_response(cache_key_prefix, ttl=3600):
-    """Decorator to cache API responses"""
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            # Generate cache key
-            cache_key = get_cache_key(cache_key_prefix, *args, 
-                                    *[v for v in kwargs.values()],
-                                    *[request.args.get(k, '') for k in sorted(request.args.keys())])
-            
-            # Try to get from cache
-            cached_response = get_from_cache(cache_key)
-            if cached_response:
-                logger.info(f"Cache hit for key: {cache_key}")
-                # Add cache indicator to response
-                if isinstance(cached_response, dict):
-                    cached_response['cache_info'] = {
-                        'cached': True,
-                        'cache_key': cache_key,
-                        'served_at': datetime.utcnow().isoformat() + 'Z'
-                    }
-                return jsonify(cached_response)
-            
-            # Execute function and cache result
-            result = f(*args, **kwargs)
-            
-            # Cache successful responses
-            if isinstance(result, tuple):
-                response_data, status_code = result
-                if status_code == 200 and hasattr(response_data, 'get_json'):
-                    json_data = response_data.get_json()
-                    if json_data:
-                        set_cache(cache_key, json_data, ttl)
-                        logger.info(f"Cached response for key: {cache_key}")
-            
-            return result
-            
-        return decorated_function
-    return decorator
 
 # Error classes
 class ValidationError(Exception):
@@ -248,9 +148,7 @@ def not_found(error):
             'GET /api/docs',
             'GET /wimbledon?year=YYYY',
             'GET /api/wimbledon?year=YYYY',
-            'GET /api/wimbledon/years',
-            'GET /api/cache/stats',
-            'POST /api/cache/clear'
+            'GET /api/wimbledon/years'
         ]
     }), 404
 
@@ -282,41 +180,13 @@ def handle_validation_error(e):
 
 # Routes
 @app.route('/health', methods=['GET'])
-@cache_response('health', CACHE_TTL['health_check'])
 def health_check():
     """Health check endpoint for monitoring"""
-    redis_status = 'connected'
-    redis_info = {}
-    
-    if REDIS_AVAILABLE:
-        try:
-            redis_client.ping()
-            redis_info = {
-                'connected': True,
-                'version': redis_client.info().get('redis_version', 'unknown'),
-                'memory_usage': redis_client.info().get('used_memory_human', 'unknown'),
-                'connected_clients': redis_client.info().get('connected_clients', 0)
-            }
-        except Exception as e:
-            redis_status = 'error'
-            redis_info = {'connected': False, 'error': str(e)}
-    else:
-        redis_status = 'unavailable'
-        redis_info = {'connected': False, 'reason': 'Redis not configured'}
-    
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.utcnow().isoformat() + 'Z',
         'version': '1.0.0',
-        'service': 'wimbledon-api',
-        'redis': {
-            'status': redis_status,
-            'details': redis_info
-        },
-        'cache': {
-            'enabled': REDIS_AVAILABLE,
-            'ttl_config': CACHE_TTL
-        }
+        'service': 'wimbledon-api'
     })
 
 @app.route('/api/docs', methods=['GET'])
@@ -348,20 +218,6 @@ def api_documentation():
                 'description': 'Get list of available years',
                 'parameters': [],
                 'example': f"{request.url_root.rstrip('/')}/api/wimbledon/years"
-            },
-            {
-                'method': 'GET',
-                'path': '/api/cache/stats',
-                'description': 'Get cache statistics and Redis information',
-                'parameters': [],
-                'example': f"{request.url_root.rstrip('/')}/api/cache/stats"
-            },
-            {
-                'method': 'POST',
-                'path': '/api/cache/clear',
-                'description': 'Clear all cached data (admin endpoint)',
-                'parameters': [],
-                'example': f"{request.url_root.rstrip('/')}/api/cache/clear"
             }
         ],
         'response_format': {
@@ -385,7 +241,6 @@ def api_documentation():
 @app.route('/wimbledon', methods=['GET'])
 @limiter.limit("30 per minute")
 @validate_year
-@cache_response('wimbledon_simple', CACHE_TTL['wimbledon_data'])
 def get_wimbledon_final_simple(year):
     """Get Wimbledon final information for a specific year (simple endpoint)"""
     try:
@@ -424,7 +279,6 @@ def get_wimbledon_final_simple(year):
 @app.route('/api/wimbledon', methods=['GET'])
 @limiter.limit("30 per minute")
 @validate_year
-@cache_response('wimbledon_api', CACHE_TTL['wimbledon_data'])
 def get_wimbledon_final(year):
     """Get Wimbledon final information for a specific year"""
     try:
@@ -464,7 +318,6 @@ def get_wimbledon_final(year):
 
 @app.route('/api/wimbledon/years', methods=['GET'])
 @limiter.limit("10 per minute")
-@cache_response('available_years', CACHE_TTL['available_years'])
 def get_available_years():
     """Get list of available years"""
     try:
@@ -491,91 +344,6 @@ def get_available_years():
             'message': 'An unexpected error occurred while processing your request'
         }), 500
 
-@app.route('/api/cache/clear', methods=['POST'])
-@limiter.limit("5 per minute")
-def clear_cache():
-    """Clear all cached data (admin endpoint)"""
-    try:
-        if not REDIS_AVAILABLE:
-            return jsonify({
-                'error': 'Cache not available',
-                'code': 'CACHE_UNAVAILABLE',
-                'message': 'Redis is not configured or unavailable'
-            }), 503
-        
-        # Clear all cache keys with our prefixes
-        patterns = ['wimbledon_simple:*', 'wimbledon_api:*', 'available_years:*', 'health:*']
-        total_cleared = 0
-        
-        for pattern in patterns:
-            keys = redis_client.keys(pattern)
-            if keys:
-                redis_client.delete(*keys)
-                total_cleared += len(keys)
-        
-        logger.info(f"Cache cleared: {total_cleared} keys removed")
-        
-        return jsonify({
-            'success': True,
-            'message': f'Cache cleared successfully. {total_cleared} keys removed.',
-            'cleared_at': datetime.utcnow().isoformat() + 'Z'
-        })
-        
-    except Exception as e:
-        logger.error(f'Error clearing cache: {str(e)}')
-        return jsonify({
-            'error': 'Cache clear failed',
-            'code': 'CACHE_CLEAR_ERROR',
-            'message': 'An error occurred while clearing the cache'
-        }), 500
-
-@app.route('/api/cache/stats', methods=['GET'])
-@limiter.limit("10 per minute")
-def cache_stats():
-    """Get cache statistics"""
-    try:
-        if not REDIS_AVAILABLE:
-            return jsonify({
-                'cache_enabled': False,
-                'redis_available': False,
-                'message': 'Redis is not configured or unavailable'
-            })
-        
-        # Get Redis info
-        info = redis_client.info()
-        
-        # Count cache keys by prefix
-        cache_counts = {}
-        for prefix in ['wimbledon_simple', 'wimbledon_api', 'available_years', 'health']:
-            keys = redis_client.keys(f"{prefix}:*")
-            cache_counts[prefix] = len(keys)
-        
-        return jsonify({
-            'cache_enabled': True,
-            'redis_available': True,
-            'redis_info': {
-                'version': info.get('redis_version'),
-                'memory_usage': info.get('used_memory_human'),
-                'connected_clients': info.get('connected_clients'),
-                'total_keys': info.get('keyspace_hits', 0) + info.get('keyspace_misses', 0),
-                'hits': info.get('keyspace_hits', 0),
-                'misses': info.get('keyspace_misses', 0),
-                'hit_rate': round((info.get('keyspace_hits', 0) / max(1, info.get('keyspace_hits', 0) + info.get('keyspace_misses', 0))) * 100, 2)
-            },
-            'cache_counts': cache_counts,
-            'total_cached_items': sum(cache_counts.values()),
-            'ttl_configuration': CACHE_TTL,
-            'retrieved_at': datetime.utcnow().isoformat() + 'Z'
-        })
-        
-    except Exception as e:
-        logger.error(f'Error getting cache stats: {str(e)}')
-        return jsonify({
-            'error': 'Cache stats unavailable',
-            'code': 'CACHE_STATS_ERROR',
-            'message': 'An error occurred while retrieving cache statistics'
-        }), 500
-
 # Add security headers
 @app.after_request
 def add_security_headers(response):
@@ -590,11 +358,8 @@ if __name__ == '__main__':
     debug = os.environ.get('FLASK_ENV') == 'development'
     
     print(f"Starting Wimbledon API server on port {port}")
-    print(f"Redis status: {'Available' if REDIS_AVAILABLE else 'Unavailable (falling back to in-memory)'}")
-    print(f"Caching: {'Enabled' if REDIS_AVAILABLE else 'Disabled'}")
     print(f"Health check: http://localhost:{port}/health")
     print(f"API documentation: http://localhost:{port}/api/docs")
     print(f"Example usage: http://localhost:{port}/api/wimbledon?year=2021")
-    print(f"Cache stats: http://localhost:{port}/api/cache/stats")
     
     app.run(host='0.0.0.0', port=port, debug=debug)
