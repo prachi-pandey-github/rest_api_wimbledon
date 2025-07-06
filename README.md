@@ -51,21 +51,6 @@ cp .env.example .env
 # Edit .env with your configuration
 ```
 
-5. Install and start Redis (optional):
-
-```bash
-# Windows (using Chocolatey)
-choco install redis-64
-
-# macOS (using Homebrew)
-brew install redis
-brew services start redis
-
-# Linux (Ubuntu)
-sudo apt-get install redis-server
-sudo systemctl start redis
-```
-
 ### Production Deployment
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed Render deployment instructions.
@@ -115,7 +100,7 @@ Query Parameters:
 Example:
 
 ```bash
-curl "http://localhost:5000/wimbledon?year=2021"
+https://rest-api-wimbledon-1.onrender.com/wimbledon?year=2021
 ```
 
 Response:
@@ -143,23 +128,23 @@ Query Parameters:
 Example:
 
 ```bash
-curl "http://localhost:5000/api/wimbledon?year=2021"
+https://rest-api-wimbledon-1.onrender.com/api/wimbledon?year=2024
 ```
 
 Response includes additional metadata:
 ```json
 {
-  "year": 2021,
-  "champion": "Novak Djokovic",
-  "runner_up": "Matteo Berrettini",
-  "score": "6-7(4-7), 6-4, 6-4, 6-3",
-  "sets": 4,
-  "tiebreak": true,
+  "champion": "Carlos Alcaraz",
   "metadata": {
-    "retrieved_at": "2025-07-06T07:28:22.556136Z",
+    "api_version": "1.0.0",
     "data_source": "Wimbledon Championships Records",
-    "api_version": "1.0.0"
-  }
+    "retrieved_at": "2025-07-06T14:46:47.651931Z"
+  },
+  "runner_up": "Novak Djokovic",
+  "score": "6-2, 6-2, 7-6(7-4)",
+  "sets": 3,
+  "tiebreak": true,
+  "year": 2024
 }
 ```
 
@@ -260,14 +245,12 @@ Test the API endpoints:
 
 ```bash
 # Test simple endpoint
-curl "http://localhost:5000/wimbledon?year=2021"
+https://rest-api-wimbledon-1.onrender.com/wimbledon?year=2024
 
 # Test detailed endpoint with caching
-curl "http://localhost:5000/api/wimbledon?year=2021"
+https://rest-api-wimbledon-1.onrender.com/api/wimbledon?year=2024
 
-# Test cache statistics
-curl "http://localhost:5000/api/cache/stats"
 
 # Test error handling
-curl "http://localhost:5000/wimbledon?year=2030"
+https://rest-api-wimbledon-1.onrender.com/wimbledon?year=2030
 
