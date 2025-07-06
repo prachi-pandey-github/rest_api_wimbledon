@@ -7,7 +7,6 @@ import os
 import secrets
 from datetime import datetime
 import logging
-import json
 
 # Configure logging
 logging.basicConfig(
@@ -31,9 +30,90 @@ limiter = Limiter(
 )
 limiter.init_app(app)
 
-# Load Wimbledon data from JSON file
-with open('wimbledon_data.json', 'r', encoding='utf-8') as f:
-    WIMBLEDON_DATA = {int(k): v for k, v in json.load(f).items()}
+# Wimbledon men's singles finals data
+WIMBLEDON_DATA ={
+
+    2024: {
+    "champion": "Carlos Alcaraz",
+    "runner_up": "Novak Djokovic",
+    "score": "6-2, 6-2, 7-6(7-4)",
+    "sets": 3,
+    "tiebreak": True
+    },
+
+
+    2023: {
+        "champion": "Novak Djokovic",
+        "runner_up": "Carlos Alcaraz",
+        "score": "1-6, 7-6(6-8), 6-1, 3-6, 6-4",
+        "sets": 5,
+        "tiebreak": True
+    },
+    2022: {
+        "champion": "Novak Djokovic",
+        "runner_up": "Nick Kyrgios",
+        "score": "4-6, 6-3, 6-4, 7-6(7-3)",
+        "sets": 4,
+        "tiebreak": True
+    },
+    2021: {
+        "champion": "Novak Djokovic",
+        "runner_up": "Matteo Berrettini",
+        "score": "6-7(4-7), 6-4, 6-4, 6-3",
+        "sets": 4,
+        "tiebreak": True
+    },
+    2020: {
+        "champion": "Tournament Cancelled",
+        "runner_up": None,
+        "score": None,
+        "sets": None,
+        "tiebreak": None,
+        "note": "Cancelled due to COVID-19 pandemic"
+    },
+    2019: {
+        "champion": "Novak Djokovic",
+        "runner_up": "Roger Federer",
+        "score": "7-6(7-5), 1-6, 7-6(7-4), 4-6, 13-12(7-3)",
+        "sets": 5,
+        "tiebreak": True
+    },
+    2018: {
+        "champion": "Novak Djokovic",
+        "runner_up": "Kevin Anderson",
+        "score": "6-2, 6-2, 7-6(7-3)",
+        "sets": 3,
+        "tiebreak": True
+    },
+    2017: {
+        "champion": "Roger Federer",
+        "runner_up": "Marin Čilić",
+        "score": "6-3, 6-1, 6-4",
+        "sets": 3,
+        "tiebreak": False
+    },
+    2016: {
+        "champion": "Andy Murray",
+        "runner_up": "Milos Raonic",
+        "score": "6-4, 7-6(7-3), 7-6(7-2)",
+        "sets": 3,
+        "tiebreak": True
+    },
+    2015: {
+        "champion": "Novak Djokovic",
+        "runner_up": "Roger Federer",
+        "score": "7-6(7-1), 6-7(10-12), 6-4, 6-3",
+        "sets": 4,
+        "tiebreak": True
+    },
+    2014: {
+        "champion": "Novak Djokovic",
+        "runner_up": "Roger Federer",
+        "score": "6-7(7-9), 6-4, 7-6(7-4), 5-7, 6-4",
+        "sets": 5,
+        "tiebreak": True
+    }
+}
 
 # Error classes
 class ValidationError(Exception):
@@ -96,7 +176,6 @@ def not_found(error):
         'available_endpoints': [
             'GET /health',
             'GET /api/docs',
-            'GET /wimbledon?year=YYYY',
             'GET /api/wimbledon?year=YYYY',
             'GET /api/wimbledon/years'
         ]
@@ -187,44 +266,6 @@ def api_documentation():
             'per_day': 200
         }
     })
-
-@app.route('/wimbledon', methods=['GET'])
-@limiter.limit("30 per minute")
-@validate_year
-def get_wimbledon_final_simple(year):
-    """Get Wimbledon final information for a specific year (simple endpoint)"""
-    try:
-        logger.info(f'Request for year {year} from {request.remote_addr} (simple endpoint)')
-        
-        final_data = WIMBLEDON_DATA.get(year)
-        
-        if not final_data:
-            return jsonify({
-                'error': 'Data not found',
-                'code': 'YEAR_NOT_FOUND',
-                'message': f'No data available for year {year}',
-                'year': year
-            }), 404
-        
-        # Return simple response matching the example format
-        response = {
-            'year': year,
-            'champion': final_data['champion'],
-            'runner_up': final_data['runner_up'],
-            'score': final_data['score'],
-            'sets': final_data['sets'],
-            'tiebreak': final_data['tiebreak']
-        }
-        
-        return jsonify(response)
-        
-    except Exception as e:
-        logger.error(f'Error processing request for year {year}: {str(e)}')
-        return jsonify({
-            'error': 'Internal server error',
-            'code': 'INTERNAL_ERROR',
-            'message': 'An unexpected error occurred while processing your request'
-        }), 500
 
 @app.route('/api/wimbledon', methods=['GET'])
 @limiter.limit("30 per minute")
