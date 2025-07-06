@@ -49,7 +49,6 @@ def get_redis_connection():
         return redis.Redis(
             host=os.environ.get('REDIS_HOST', 'localhost'),
             port=int(os.environ.get('REDIS_PORT', 6379)),
-            password=os.environ.get('REDIS_PASSWORD'),
             decode_responses=True,
             socket_connect_timeout=5,
             socket_timeout=5,
@@ -69,7 +68,7 @@ except Exception as e:
 
 # CORS configuration
 cors_origins = ['*'] if os.environ.get('FLASK_ENV') == 'development' else [
-    'https://rest-api-wimbledon-1.onrender.com'  # Replace with your actual Render domain
+    'https://rest-api-wimbledon-1.onrender.com' 
 ]
 CORS(app, origins=cors_origins)
 
