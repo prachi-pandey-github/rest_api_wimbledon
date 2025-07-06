@@ -12,8 +12,6 @@ A lightweight Flask-based REST API to fetch historical data on Wimbledon Men's S
 * Well-documented API endpoints.
 * Includes health check and metadata in responses.
 * Configurable security headers and CORS.
-* **NEW**: Separate JSON data file for easy maintenance.
-* **NEW**: Simple endpoint for clean responses.
 
 ---
 
@@ -207,24 +205,4 @@ curl "http://localhost:5000/api/wimbledon?year=2021"
 curl "http://localhost:5000/wimbledon?year=2030"
 ```
 
----
-
-## 🚀 Production Deployment
-
-For production deployment:
-
-1. Set environment variables:
-   ```bash
-   export SECRET_KEY="your-secure-secret-key"
-   export FLASK_ENV="production"
-   ```
-
-2. Use a production WSGI server like Gunicorn:
-   ```bash
-   gunicorn -w 4 -b 0.0.0.0:5000 main:app
-   ```
-
-3. Configure a proper storage backend for rate limiting (Redis recommended).
-
----
 
