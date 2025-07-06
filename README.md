@@ -17,7 +17,7 @@ A lightweight Flask-based REST API to fetch historical data on Wimbledon Men's S
 =======
 * **Production-ready** with Render deployment support.
 * Graceful fallback when Redis is unavailable.
->>>>>>> 86429a1 (all commit)
+
 
 ---
 
@@ -271,54 +271,4 @@ curl "http://localhost:5000/api/cache/stats"
 
 # Test error handling
 curl "http://localhost:5000/wimbledon?year=2030"
-```
-
-<<<<<<< HEAD
-=======
----
-
-## 🚀 Production Deployment
-
-### Quick Deploy to Render
-
-1. **Push to GitHub**:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git push origin main
-   ```
-
-2. **Deploy on Render**:
-   - Go to [render.com](https://render.com)
-   - Connect your GitHub repo
-   - Use the included `render.yaml` for automatic setup
-   - Redis and web service will be created automatically
-
-3. **Manual Setup** (if not using render.yaml):
-   - Create Redis service (Starter plan - free)
-   - Create Web service with:
-     - Build: `pip install -r requirements.txt`
-     - Start: `gunicorn --bind 0.0.0.0:$PORT main:app`
-     - Environment: Set `REDIS_URL` from Redis service
-
-### Local Production Testing
-
-```bash
-# Install production dependencies
-pip install -r requirements.txt
-
-# Set environment variables
-export SECRET_KEY="your-secure-secret-key"
-export FLASK_ENV="production"
-export REDIS_URL="redis://localhost:6379"
-
-# Run with Gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 main:app
-```
-
-For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
-
----
->>>>>>> 86429a1 (all commit)
 
