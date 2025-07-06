@@ -162,7 +162,6 @@ Example data structure:
 * `/wimbledon`: `30/minute`
 * `/api/wimbledon`: `30/minute`
 * `/api/wimbledon/years`: `10/minute`
-* `/api/cache/clear`: `5/minute`
 * `/api/cache/stats`: `10/minute`
 
 Rate limiting uses Redis when available, falls back to memory-based limiting.
