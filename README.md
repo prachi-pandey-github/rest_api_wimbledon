@@ -27,8 +27,8 @@ A lightweight Flask-based REST API to fetch historical data on Wimbledon Men's S
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/wimbledon-api.git
-cd wimbledon-api
+git clone https://github.com/your-username/rest_api_wimbledon.git
+cd rest_api_wimbledon.git
 ```
 
 2. Create a virtual environment:
