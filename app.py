@@ -211,9 +211,9 @@ def validate_year(f):
                     'INVALID_YEAR_FORMAT'
                 )
             
-            if year < 1877:
+            if year < 2014:
                 raise ValidationError(
-                    'Wimbledon tournament started in 1877',
+                    'Data is only available from 2014 onwards',
                     'YEAR_TOO_EARLY'
                 )
             
