@@ -189,21 +189,6 @@ The API includes Redis-based caching for improved performance:
 * Rate limiting with Redis backend
 * Environment-based secret key management
 
----
-
-## 📄 Environment Variables
-
-| Variable     | Default          | Description                         |
-| ------------ |---------------- | ----------------------------------- |
-| `PORT`       | `5000`           | Port to run the server on           |
-| `FLASK_ENV`  | `production`     | Set to `development` for debug mode |
-| `SECRET_KEY` | Auto-generated   | Flask app secret key                |
-| `REDIS_URL`  | None             | Redis connection string             |
-| `REDIS_HOST` | `localhost`      | Redis host for local development    |
-| `REDIS_PORT` | `6379`           | Redis port                          |
-
----
-
 ## 🧪 Testing
 
 Test the API endpoints:
