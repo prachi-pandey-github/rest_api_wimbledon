@@ -12,7 +12,7 @@ import redis
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 
-# Load environment variables from .env file (for local development)
+# Load environment variables from .env file 
 load_dotenv()
 
 # Configure logging
@@ -33,7 +33,7 @@ def get_redis_connection():
     redis_url = os.environ.get('REDIS_URL')
     
     if redis_url:
-        # Parse Redis URL (useful for production environments like Heroku)
+        # Parse Redis URL 
         url = urlparse(redis_url)
         return redis.Redis(
             host=url.hostname,
