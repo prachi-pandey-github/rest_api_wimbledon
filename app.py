@@ -247,8 +247,7 @@ def not_found(error):
             'GET /wimbledon?year=YYYY',
             'GET /api/wimbledon?year=YYYY',
             'GET /api/wimbledon/years',
-            'GET /api/cache/stats',
-            'POST /api/cache/clear'
+            'GET /api/cache/stats'
         ]
     }), 404
 
@@ -353,13 +352,6 @@ def api_documentation():
                 'description': 'Get cache statistics and Redis information',
                 'parameters': [],
                 'example': f"{request.url_root.rstrip('/')}/api/cache/stats"
-            },
-            {
-                'method': 'POST',
-                'path': '/api/cache/clear',
-                'description': 'Clear all cached data (admin endpoint)',
-                'parameters': [],
-                'example': f"{request.url_root.rstrip('/')}/api/cache/clear"
             }
         ],
         'response_format': {
@@ -487,44 +479,6 @@ def get_available_years():
             'error': 'Internal server error',
             'code': 'INTERNAL_ERROR',
             'message': 'An unexpected error occurred while processing your request'
-        }), 500
-
-@app.route('/api/cache/clear', methods=['POST'])
-@limiter.limit("5 per minute")
-def clear_cache():
-    """Clear all cached data (admin endpoint)"""
-    try:
-        if not REDIS_AVAILABLE:
-            return jsonify({
-                'error': 'Cache not available',
-                'code': 'CACHE_UNAVAILABLE',
-                'message': 'Redis is not configured or unavailable'
-            }), 503
-        
-        # Clear all cache keys with our prefixes
-        patterns = ['wimbledon_simple:*', 'wimbledon_api:*', 'available_years:*', 'health:*']
-        total_cleared = 0
-        
-        for pattern in patterns:
-            keys = redis_client.keys(pattern)
-            if keys:
-                redis_client.delete(*keys)
-                total_cleared += len(keys)
-        
-        logger.info(f"Cache cleared: {total_cleared} keys removed")
-        
-        return jsonify({
-            'success': True,
-            'message': f'Cache cleared successfully. {total_cleared} keys removed.',
-            'cleared_at': datetime.utcnow().isoformat() + 'Z'
-        })
-        
-    except Exception as e:
-        logger.error(f'Error clearing cache: {str(e)}')
-        return jsonify({
-            'error': 'Cache clear failed',
-            'code': 'CACHE_CLEAR_ERROR',
-            'message': 'An error occurred while clearing the cache'
         }), 500
 
 @app.route('/api/cache/stats', methods=['GET'])
