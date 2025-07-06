@@ -69,8 +69,7 @@ except Exception as e:
 
 # CORS configuration
 cors_origins = ['*'] if os.environ.get('FLASK_ENV') == 'development' else [
-    'https://your-frontend-domain.com',  # Replace with your actual frontend domain
-    'https://wimbledon-api.onrender.com'  # Replace with your actual Render domain
+    'https://rest-api-wimbledon-1.onrender.com'  # Replace with your actual Render domain
 ]
 CORS(app, origins=cors_origins)
 
