@@ -14,7 +14,6 @@ A lightweight Flask-based REST API to fetch historical data on Wimbledon Men's S
 * Health check with Redis status monitoring.
 * Cache management endpoints.
 * Configurable security headers and CORS
-=======
 * **Production-ready** with Render deployment support.
 * Graceful fallback when Redis is unavailable.
 
