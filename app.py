@@ -537,16 +537,15 @@ def add_security_headers(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_ENV') == 'development'
-    
-    print(f"Starting Wimbledon API server on port {port}")
-    print(f"Redis status: {'Available' if REDIS_AVAILABLE else 'Unavailable (falling back to in-memory)'}")
-    print(f"Caching: {'Enabled' if REDIS_AVAILABLE else 'Disabled'}")
-    print(f"Health check: http://localhost:{port}/health")
-    print(f"API documentation: http://localhost:{port}/api/docs")
-    print(f"Example usage: http://localhost:{port}/api/wimbledon?year=2021")
-    print(f"Cache stats: http://localhost:{port}/api/cache/stats")
-    
-    app.run(host='0.0.0.0', port=port, debug=debug)
+# Log startup info when app loads (works with Gunicorn)
+logger.info("Wimbledon API app loaded.")
+logger.info(f"Redis status: {'Available' if REDIS_AVAILABLE else 'Unavailable'}")
+logger.info(f"Caching: {'Enabled' if REDIS_AVAILABLE else 'Disabled'}")
+logger.info("Health check: /health")
+logger.info("Docs: /api/docs")
+logger.info("Example: /api/wimbledon?year=2021")
+logger.info("Cache stats: /api/cache/stats")
+
+
+
+
