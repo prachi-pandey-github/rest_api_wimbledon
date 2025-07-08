@@ -481,6 +481,20 @@ def get_available_years():
             'message': 'An unexpected error occurred while processing your request'
         }), 500
 
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({
+        'message': 'Welcome to the Wimbledon API!',
+        'available_endpoints': [
+            '/health',
+            '/api/docs',
+            '/wimbledon?year=YYYY',
+            '/api/wimbledon?year=YYYY',
+            '/api/wimbledon/years',
+            '/api/cache/stats'
+        ]
+    })
+
 @app.route('/api/cache/stats', methods=['GET'])
 @limiter.limit("10 per minute")
 def cache_stats():
